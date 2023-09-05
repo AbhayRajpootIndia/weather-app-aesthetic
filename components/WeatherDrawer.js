@@ -1,141 +1,146 @@
-import React, { useEffect, useRef, useState } from 'react';
-import {
-  Animated,
-  View,
-  StyleSheet,
-  PanResponder,
-  Text,
-  Dimensions,
-  useAnimatedValue,
-  ScrollView,
-} from 'react-native';
+import React, { useCallback, useRef, useMemo } from 'react';
+import { StyleSheet, View, SafeAreaView, Dimensions } from 'react-native';
+import BottomSheet, {
+  BottomSheetScrollView,
+  BottomSheetFlatList,
+} from '@gorhom/bottom-sheet';
 
 import { BlurView } from 'expo-blur';
 
+import { FlatList } from 'react-native-gesture-handler';
+import WeatherElement from './WeatherElement';
+
 function WeatherDrawer() {
   const { width, height } = Dimensions.get('screen');
-  const drawerHeight = height * 0.75;
 
-  const [isOpen, setIsOpen] = useState(false);
+  const sheetRef = useRef(null);
 
-  const pan = useRef(new Animated.ValueXY(0, 900)).current;
-  const myY = useAnimatedValue(0);
-  const yMax = useAnimatedValue(320);
-  const yMin = useAnimatedValue(-320);
+  const data = useMemo(
+    () =>
+      Array(50)
+        .fill(0)
+        .map((_, index) => `index-${index}`),
+    []
+  );
+  const snapPoints = useMemo(() => ['35%', '50%', '80%'], []);
 
-  const [yOffsetAtAnimationStart, setYOffsetAtAnimationStart] = useState(0);
+  // callbacks
+  const handleSheetChange = useCallback((index) => {
+    console.log('handleSheetChange', index);
+  }, []);
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: () => (isOpen ? false : true),
-      onPanResponderMove: (e, gestureState) => {
-        if (pan.y._value === -320) {
-          setIsOpen(true);
-          console.log('rannnnnn');
-        }
+  // render
+  const renderItem = useCallback(
+    (item) => <WeatherElement time={12} key={item} />,
+    []
+  );
 
-        if (pan.y._value > 320) {
-          console.log('1st');
-
-          Animated.event(
-            [
-              null,
-              {
-                dx: pan.x,
-                dy: yMax,
-              },
-            ],
-            {
-              useNativeDriver: false,
-            }
-          )(e, gestureState);
-        } else if (pan.y._value < -320) {
-          console.log('2nd' + yMin._value);
-
-          Animated.event(
-            [
-              null,
-              {
-                dx: pan.x,
-                dy: yMin,
-              },
-            ],
-            {
-              useNativeDriver: false,
-            }
-          )(e, gestureState);
-        } else {
-          console.log('3rd');
-
-          Animated.event(
-            [
-              null,
-              {
-                dx: pan.x,
-                dy: pan.y,
-              },
-            ],
-            {
-              useNativeDriver: false,
-            }
-          )(e, gestureState);
-        }
-      },
-      onPanResponderRelease: async (e, { vy }) => {
-        //pan.extractOffset();
-        console.log(pan.y._value);
-        console.log('bacn');
-        if (pan.y._value > 100) {
-          console.log('1st');
-          Animated.spring(pan, {
-            toValue: 0,
-            useNativeDriver: false,
-          }).start();
-        } else if (pan.y._value < -320) {
-          console.log('2nd');
-          Animated.spring(pan, {
-            toValue: -320,
-            useNativeDriver: false,
-          }).start();
-        }
-      },
-    })
-  ).current;
-
-  //pan.y <= 320 || pan.y > -320 ? pan.y : 0.0
+  const DATA = [
+    {
+      id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
+      title: '12',
+    },
+    {
+      id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
+      title: '1',
+    },
+    {
+      id: '58694a0f-3da1-471f-bd96-145571e29d72',
+      title: '2',
+    },
+    {
+      id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
+      title: '3',
+    },
+    {
+      id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
+      title: '4',
+    },
+    {
+      id: '58694a0f-3da1-471f-bd96-145571e29d72',
+      title: '5',
+    },
+    {
+      id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
+      title: '6',
+    },
+    {
+      id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
+      title: '7',
+    },
+    {
+      id: '58694a0f-3da1-471f-bd96-145571e29d72',
+      title: '8',
+    },
+  ];
 
   return (
     <View style={styles.container}>
-      <Text style={styles.titleText}>Drag this box!</Text>
-      <Animated.View
-        style={{
-          transform: [
-            {
-              translateY: pan.y,
-            },
-          ],
-        }}
-        {...panResponder.panHandlers}
+      <BottomSheet
+        ref={sheetRef}
+        backgroundStyle={styles.sheetBackground}
+        handleIndicatorStyle={styles.drawerHandle}
+        index={1}
+        snapPoints={snapPoints}
+        onChange={handleSheetChange}
       >
-        <BlurView
-          intensity={30}
-          tint="dark"
-          style={[
-            styles.blurContainer,
-            { width: width + 2, height: drawerHeight },
-          ]}
-        >
-          <View style={styles.drawerHandle}></View>
-          <ScrollView style={{ height: 500, backgroundColor: 'red' }}>
-            <Text style={styles.text}>"hello"</Text>
-          </ScrollView>
-        </BlurView>
-      </Animated.View>
+        <BottomSheetScrollView contentContainerStyle={styles.contentContainer}>
+          {/* {data.map(renderItem)} */}
+          <SafeAreaView style={styles.weatherElementsContainer}>
+            <FlatList
+              data={DATA}
+              horizontal={true}
+              scrollEnabled={true}
+              renderItem={({ item }) => (
+                <WeatherElement time={item.title} key={item} />
+              )}
+              keyExtractor={(item, index) => index}
+              showsHorizontalScrollIndicator={false}
+              showsVerticalScrollIndicator={false}
+            />
+          </SafeAreaView>
+        </BottomSheetScrollView>
+      </BottomSheet>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: 200,
+  },
+  sheetBackground: {
+    opacity: 0.9,
+    backgroundColor: '#2E335A',
+    borderTopLeftRadius: 35,
+    borderTopRightRadius: 35,
+    borderWidth: 1,
+    borderColor: '#EBEBF599',
+  },
+  contentContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 5,
+  },
+  itemContainer: {
+    padding: 6,
+    margin: 6,
+    height: 50,
+    borderWidth: 1,
+    borderRadius: 40,
+    borderColor: '#EBEBF599',
+  },
+  drawerHandle: {
+    backgroundColor: 'rgba(0, 0, 0, 0.30)',
+    width: '14%',
+    height: 5,
+  },
+  weatherElementsContainer: {
+    flexGrow: 1,
+  },
+});
+
+const styles2 = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
@@ -156,13 +161,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     marginBottom: -320,
-  },
-  drawerHandle: {
-    backgroundColor: 'rgba(0, 0, 0, 0.30)',
-    width: '18%',
-    height: '1%',
-    marginVertical: 10,
-    borderRadius: 20,
   },
 });
 
