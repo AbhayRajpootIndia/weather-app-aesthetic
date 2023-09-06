@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   houseImage: {
-    marginTop: '50%',
+    marginTop: '40%',
     aspectRatio: 1 / 1,
     width: 350,
   },

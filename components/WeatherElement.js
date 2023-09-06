@@ -6,7 +6,7 @@ function WeatherElement({ time }) {
   return (
     <View style={styles.container}>
       <BlurView
-        tint="light"
+        tint="dark"
         intensity={10}
         blurReductionFactor={0.1}
         overlayColor="transparent"

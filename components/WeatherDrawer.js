@@ -1,39 +1,80 @@
-import React, { useCallback, useRef, useMemo } from 'react';
-import { StyleSheet, View, SafeAreaView, Dimensions } from 'react-native';
-import BottomSheet, {
-  BottomSheetScrollView,
-  BottomSheetFlatList,
-} from '@gorhom/bottom-sheet';
+import React, {
+  useCallback,
+  useRef,
+  useMemo,
+  useState,
+  useLayoutEffect,
+  useEffect,
+} from 'react';
 
-import { BlurView } from 'expo-blur';
+import {
+  StyleSheet,
+  View,
+  SafeAreaView,
+  Dimensions,
+  Text,
+  Image,
+  Animated,
+  ImageBackground,
+  Pressable,
+  Alert,
+} from 'react-native';
 
+import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+
+// not using normal flatlist since it wont scroll, must use from react-native-gesture-handler only
 import { FlatList } from 'react-native-gesture-handler';
+
+// components
+import WeatherDrawerBottomTabsBar from './WeatherDrawerBottomTabsBar';
 import WeatherElement from './WeatherElement';
+import { LinearGradient } from 'expo-linear-gradient';
+
+function TopBarButtons({ buttonText, isFocused, onPress }) {
+  return (
+    <Pressable
+      onPress={
+        onPress
+          ? onPress
+          : () =>
+              Alert.alert(
+                'Error',
+                'OnPress handler is missing for this button.'
+              )
+      }
+    >
+      <View style={{ justifyContent: 'space-between', rowGap: 5 }}>
+        <Text style={{ color: isFocused ? 'white' : '#EBEBF599' }}>
+          {buttonText || 'Button Text'}
+        </Text>
+        {isFocused && (
+          <LinearGradient
+            start={{ x: 0.0, y: 1.0 }} // left side
+            end={{ x: 1.0, y: 0.0 }} // right side
+            colors={[
+              'rgba(255, 255, 255, 0.10)',
+              'rgba(255, 255, 255, 0.25)',
+              'rgba(255, 255, 255, 0.50)',
+              'rgba(255, 255, 255, 0.75)',
+              'white',
+              'rgba(255, 255, 255, 0.75)',
+              'rgba(255, 255, 255, 0.50)',
+              'rgba(255, 255, 255, 0.25)',
+              'rgba(255, 255, 255, 0.10)',
+            ]}
+            style={{ width: '100%', height: 1 }}
+          />
+        )}
+      </View>
+    </Pressable>
+  );
+}
 
 function WeatherDrawer() {
-  const { width, height } = Dimensions.get('screen');
-
+  const { width } = Dimensions.get('screen');
   const sheetRef = useRef(null);
 
-  const data = useMemo(
-    () =>
-      Array(50)
-        .fill(0)
-        .map((_, index) => `index-${index}`),
-    []
-  );
-  const snapPoints = useMemo(() => ['35%', '50%', '80%'], []);
-
-  // callbacks
-  const handleSheetChange = useCallback((index) => {
-    console.log('handleSheetChange', index);
-  }, []);
-
-  // render
-  const renderItem = useCallback(
-    (item) => <WeatherElement time={12} key={item} />,
-    []
-  );
+  const snapPoints = useMemo(() => ['40%', '80%'], []);
 
   const DATA = [
     {
@@ -74,38 +115,90 @@ function WeatherDrawer() {
     },
   ];
 
+  const [forecastType, setForecastType] = useState('hourly');
+
+  const animatedY = new Animated.Value(0);
+
+  const handleSheetChange = useCallback((index) => {
+    console.log('handleSheetChange', index);
+
+    if (index === 0) {
+      Animated.timing(animatedY, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(animatedY, {
+        toValue: 100,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, []);
+
+  // pointerEvents="box-none" means that the corresponding view will not receive the touch events while its children will
+
   return (
-    <View style={styles.container}>
-      <BottomSheet
-        ref={sheetRef}
-        backgroundStyle={styles.sheetBackground}
-        handleIndicatorStyle={styles.drawerHandle}
-        index={1}
-        snapPoints={snapPoints}
-        onChange={handleSheetChange}
-      >
-        <BottomSheetScrollView contentContainerStyle={styles.contentContainer}>
-          {/* {data.map(renderItem)} */}
-          <SafeAreaView style={styles.weatherElementsContainer}>
-            <FlatList
-              data={DATA}
-              horizontal={true}
-              scrollEnabled={true}
-              renderItem={({ item }) => (
-                <WeatherElement time={item.title} key={item} />
-              )}
-              keyExtractor={(item, index) => index}
-              showsHorizontalScrollIndicator={false}
-              showsVerticalScrollIndicator={false}
-            />
-          </SafeAreaView>
-        </BottomSheetScrollView>
-      </BottomSheet>
-    </View>
+    <>
+      <View style={styles.tabBarWrapper} pointerEvents="box-none">
+        <Animated.View style={[{ transform: [{ translateY: animatedY }] }]}>
+          <WeatherDrawerBottomTabsBar currentIndex animatedY={animatedY} />
+        </Animated.View>
+      </View>
+
+      <View style={styles.container}>
+        <BottomSheet
+          ref={sheetRef}
+          backgroundStyle={styles.sheetBackground}
+          handleIndicatorStyle={styles.drawerHandle}
+          snapPoints={snapPoints}
+          onChange={handleSheetChange}
+        >
+          <BottomSheetScrollView
+            contentContainerStyle={styles.contentContainer}
+          >
+            <View style={[styles.topBarContainer, { width }]}>
+              <TopBarButtons
+                buttonText="Hourly Forecast"
+                isFocused={forecastType === 'hourly'}
+                onPress={() => setForecastType('hourly')}
+              />
+              <TopBarButtons
+                buttonText="Weekly Forecast"
+                isFocused={forecastType === 'weekly'}
+                onPress={() => setForecastType('weekly')}
+              />
+            </View>
+            <SafeAreaView style={styles.weatherElementsContainer}>
+              <FlatList
+                data={DATA}
+                horizontal={true}
+                scrollEnabled={true}
+                renderItem={({ item }) => (
+                  <WeatherElement time={item.title} key={item} />
+                )}
+                keyExtractor={(item, index) => index}
+                showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+              />
+            </SafeAreaView>
+          </BottomSheetScrollView>
+        </BottomSheet>
+      </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
+  tabBarWrapper: {
+    position: 'absolute',
+    height: '100%',
+    width: '100%',
+    justifyContent: 'flex-end',
+    zIndex: 5,
+    opacity: 1,
+  },
   container: {
     flex: 1,
     paddingTop: 200,
@@ -119,8 +212,10 @@ const styles = StyleSheet.create({
     borderColor: '#EBEBF599',
   },
   contentContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
+    paddingTop: 10,
     paddingHorizontal: 5,
+    justifyContent: 'space-between',
   },
   itemContainer: {
     padding: 6,
@@ -138,29 +233,14 @@ const styles = StyleSheet.create({
   weatherElementsContainer: {
     flexGrow: 1,
   },
-});
-
-const styles2 = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
-  titleText: {
-    fontSize: 14,
-    lineHeight: 24,
-    fontWeight: 'bold',
-  },
-  blurContainer: {
-    overflow: 'hidden',
-    borderTopLeftRadius: 35,
-    borderTopRightRadius: 35,
-    borderColor: '#EBEBF599',
-    borderWidth: 1,
-    borderBottomWidth: 0,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    marginBottom: -320,
+  topBarContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginLeft: -5,
+    marginTop: -10,
+    marginBottom: 15,
+    borderBottomColor: '#EBEBF599',
+    borderBottomWidth: 1,
   },
 });
 
