@@ -1,23 +1,11 @@
-import React, {
-  useCallback,
-  useRef,
-  useMemo,
-  useState,
-  useLayoutEffect,
-  useEffect,
-} from 'react';
+import { useCallback, useRef, useMemo, useState } from 'react';
 
 import {
   StyleSheet,
   View,
   SafeAreaView,
   Dimensions,
-  Text,
-  Image,
   Animated,
-  ImageBackground,
-  Pressable,
-  Alert,
 } from 'react-native';
 
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
@@ -27,50 +15,29 @@ import { FlatList } from 'react-native-gesture-handler';
 
 // components
 import WeatherDrawerBottomTabsBar from './WeatherDrawerBottomTabsBar';
+import TopBarButtons from './TopBarButtons';
 import WeatherElement from './WeatherElement';
-import { LinearGradient } from 'expo-linear-gradient';
+import AirQualityWidget from './AirQualityWidget';
+import UvIndexWidget from './UvIndexWidget';
 
-function TopBarButtons({ buttonText, isFocused, onPress }) {
+function TopBar({ width, forecastType, setForecastType }) {
   return (
-    <Pressable
-      onPress={
-        onPress
-          ? onPress
-          : () =>
-              Alert.alert(
-                'Error',
-                'OnPress handler is missing for this button.'
-              )
-      }
-    >
-      <View style={{ justifyContent: 'space-between', rowGap: 5 }}>
-        <Text style={{ color: isFocused ? 'white' : '#EBEBF599' }}>
-          {buttonText || 'Button Text'}
-        </Text>
-        {isFocused && (
-          <LinearGradient
-            start={{ x: 0.0, y: 1.0 }} // left side
-            end={{ x: 1.0, y: 0.0 }} // right side
-            colors={[
-              'rgba(255, 255, 255, 0.10)',
-              'rgba(255, 255, 255, 0.25)',
-              'rgba(255, 255, 255, 0.50)',
-              'rgba(255, 255, 255, 0.75)',
-              'white',
-              'rgba(255, 255, 255, 0.75)',
-              'rgba(255, 255, 255, 0.50)',
-              'rgba(255, 255, 255, 0.25)',
-              'rgba(255, 255, 255, 0.10)',
-            ]}
-            style={{ width: '100%', height: 1 }}
-          />
-        )}
-      </View>
-    </Pressable>
+    <View style={[styles.topBarContainer, { width }]}>
+      <TopBarButtons
+        buttonText="Hourly Forecast"
+        isFocused={forecastType === 'hourly'}
+        onPress={() => setForecastType('hourly')}
+      />
+      <TopBarButtons
+        buttonText="Weekly Forecast"
+        isFocused={forecastType === 'weekly'}
+        onPress={() => setForecastType('weekly')}
+      />
+    </View>
   );
 }
 
-function WeatherDrawer() {
+export default function WeatherDrawer() {
   const { width } = Dimensions.get('screen');
   const sheetRef = useRef(null);
 
@@ -117,21 +84,43 @@ function WeatherDrawer() {
 
   const [forecastType, setForecastType] = useState('hourly');
 
-  const animatedY = new Animated.Value(0);
+  // we use useRef() to store the value of new Animted.Value(0) to avoid re-initialising of the Animated.Value to 0 whenever a state changes in our component
+  const animatedY = useRef(new Animated.Value(0));
+  const bottomElementsOpacity = useRef(new Animated.Value(0.0));
+
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const handleSheetChange = useCallback((index) => {
     console.log('handleSheetChange', index);
+    setCurrentIndex(index);
 
+    // when drawer is closed
     if (index === 0) {
-      Animated.timing(animatedY, {
-        toValue: 0,
-        duration: 200,
+      // bottomElements OPACITY
+      Animated.timing(bottomElementsOpacity.current, {
+        toValue: 0.0,
+        duration: 50,
         useNativeDriver: true,
       }).start();
-    } else {
-      Animated.timing(animatedY, {
+
+      Animated.timing(animatedY.current, {
+        toValue: 0,
+        duration: 100,
+        useNativeDriver: true,
+      }).start();
+    }
+    // when drawer is opened
+    else {
+      Animated.timing(animatedY.current, {
         toValue: 100,
-        duration: 200,
+        duration: 40,
+        useNativeDriver: true,
+      }).start();
+
+      // bottomElements OPACITY
+      Animated.timing(bottomElementsOpacity.current, {
+        toValue: 1.0,
+        duration: 100,
         useNativeDriver: true,
       }).start();
     }
@@ -142,8 +131,10 @@ function WeatherDrawer() {
   return (
     <>
       <View style={styles.tabBarWrapper} pointerEvents="box-none">
-        <Animated.View style={[{ transform: [{ translateY: animatedY }] }]}>
-          <WeatherDrawerBottomTabsBar currentIndex animatedY={animatedY} />
+        <Animated.View
+          style={[{ transform: [{ translateY: animatedY.current }] }]}
+        >
+          <WeatherDrawerBottomTabsBar currentIndex />
         </Animated.View>
       </View>
 
@@ -157,19 +148,15 @@ function WeatherDrawer() {
         >
           <BottomSheetScrollView
             contentContainerStyle={styles.contentContainer}
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
           >
-            <View style={[styles.topBarContainer, { width }]}>
-              <TopBarButtons
-                buttonText="Hourly Forecast"
-                isFocused={forecastType === 'hourly'}
-                onPress={() => setForecastType('hourly')}
-              />
-              <TopBarButtons
-                buttonText="Weekly Forecast"
-                isFocused={forecastType === 'weekly'}
-                onPress={() => setForecastType('weekly')}
-              />
-            </View>
+            <TopBar
+              width={width}
+              forecastType={forecastType}
+              setForecastType={setForecastType}
+            />
+
             <SafeAreaView style={styles.weatherElementsContainer}>
               <FlatList
                 data={DATA}
@@ -182,6 +169,25 @@ function WeatherDrawer() {
                 showsHorizontalScrollIndicator={false}
                 showsVerticalScrollIndicator={false}
               />
+
+              <Animated.View
+                style={[
+                  { height: 800 },
+                  { opacity: bottomElementsOpacity.current },
+                ]}
+              >
+                <AirQualityWidget />
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    paddingHorizontal: 5,
+                  }}
+                >
+                  <UvIndexWidget />
+                  <UvIndexWidget />
+                </View>
+              </Animated.View>
             </SafeAreaView>
           </BottomSheetScrollView>
         </BottomSheet>
@@ -193,7 +199,7 @@ function WeatherDrawer() {
 const styles = StyleSheet.create({
   tabBarWrapper: {
     position: 'absolute',
-    height: '100%',
+    height: '101%',
     width: '100%',
     justifyContent: 'flex-end',
     zIndex: 5,
@@ -243,5 +249,3 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
 });
-
-export default WeatherDrawer;
