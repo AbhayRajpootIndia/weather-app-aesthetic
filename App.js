@@ -7,9 +7,10 @@ import { PaperProvider } from 'react-native-paper';
 import { useEffect } from 'react';
 import { Keyboard, ImageBackground, StyleSheet, View } from 'react-native';
 
-import { Provider, useDispatch } from 'react-redux';
+import { Provider, useDispatch, useSelector } from 'react-redux';
 import { store } from './store/redux/store';
 import { setIsKeyboardVisible } from './store/redux/keyboardSlice';
+import { setWeatherData } from './store/redux/weatherSlice';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -41,6 +42,27 @@ function AppRouter() {
     return () => {
       keyboardDidHideListener.remove();
       keyboardDidShowListener.remove();
+    };
+  }, []);
+
+  const currentLocation = useSelector(
+    (state) => state.location.currentLocation
+  );
+
+  useEffect(() => {
+    if (currentLocation.city) {
+      const { lat, long } = currentLocation;
+
+      getWeather(lat, long)
+        .then((weatherData) => {
+          console.log(weatherData);
+          dispatch(setWeatherData({ weatherData: weatherData }));
+        })
+        .catch((err) => console.error(err));
+    }
+
+    return () => {
+      // implement local storage
     };
   }, []);
 
@@ -83,3 +105,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
+// icon color - #e6e6e6

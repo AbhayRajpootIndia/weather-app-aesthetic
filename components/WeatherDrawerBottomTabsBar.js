@@ -28,7 +28,6 @@ function BottomTabButton({ iconImage, tabButtonHeight }) {
 
 function WeatherDrawerBottomTabsBar() {
   const { width, height } = Dimensions.get('window');
-
   const backgroundImageSizeFactor = 1.6;
   const tabButtonHeight = (128 / 561) * width * 0.9;
 
@@ -56,16 +55,7 @@ function WeatherDrawerBottomTabsBar() {
           </View>
           <Pressable onPress={() => console.log('bee')}>
             <View style={{ justifyContent: 'center' }}>
-              <Image
-                style={{
-                  height: 65,
-                  width: 65,
-                  position: 'absolute',
-                  alignSelf: 'center',
-                  zIndex: 50,
-                }}
-                source={plusButton}
-              />
+              <Image style={styles.plusButton} source={plusButton} />
               <Image
                 style={[
                   styles.backgroundImage,
@@ -112,6 +102,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  plusButton: {
+    height: 65,
+    width: 65,
+    position: 'absolute',
+    alignSelf: 'center',
+    zIndex: 50,
   },
 });
 

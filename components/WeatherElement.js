@@ -1,10 +1,26 @@
 import { Text, View, Image, StyleSheet, Pressable } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
-function WeatherElement({ time }) {
+function getFormattedTime(time) {
+  if (time === 0) {
+    return '12 AM';
+  } else if (time < 12) {
+    return `${time} AM`;
+  } else if (time === 12) {
+    return '12 PM';
+  } else {
+    return `${time % 12} PM`;
+  }
+}
+
+function WeatherElement({ item }) {
   const image = require('../assets/images/weatherElementIcons/moon-cloud-mid-rain.png');
   const [isFocused, setIsFocused] = useState(false);
+  const date = new Date(0);
+  date.setUTCSeconds(parseInt(item.time_epoch));
+  const time = useMemo(() => date.getHours(), [item]);
+
   return (
     <Pressable
       onPress={() => {
@@ -42,14 +58,14 @@ function WeatherElement({ time }) {
             }}
           >
             <Text style={[styles.text, { fontSize: 14, fontWeight: '500' }]}>
-              {time} AM
+              {getFormattedTime(time)}
             </Text>
             <Image
               source={require('../assets/images/weatherElementIcons/moon-cloud-mid-rain.png')}
               style={{ width: 50, height: 50 }}
             />
             <Text style={[styles.text, { fontSize: 18, fontWeight: '400' }]}>
-              20
+              {parseInt(item.temp_c)}º
             </Text>
           </View>
         </BlurView>

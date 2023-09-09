@@ -1,4 +1,4 @@
-import { useCallback, useRef, useMemo, useState } from 'react';
+import { useCallback, useRef, useMemo, useState, useEffect } from 'react';
 
 import {
   StyleSheet,
@@ -13,13 +13,23 @@ import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 // not using normal flatlist since it wont scroll, must use from react-native-gesture-handler only
 import { FlatList } from 'react-native-gesture-handler';
 
+// APIS
+import getWeather from '../network/getWeatherAPI';
+
+// redux
+import { useDispatch, useSelector } from 'react-redux';
+
 // components
 import WeatherDrawerBottomTabsBar from './WeatherDrawerBottomTabsBar';
 import TopBarButtons from './TopBarButtons';
 import WeatherElement from './WeatherElement';
 import AirQualityWidget from './AirQualityWidget';
 import UvIndexWidget from './UvIndexWidget';
+import SunriseWidget from './SunriseWidget';
+import WindWidget from './WindWidget';
+import RainFallWidget from './RainFallWidget';
 
+// top bar component
 function TopBar({ width, forecastType, setForecastType }) {
   return (
     <View style={[styles.topBarContainer, { width }]}>
@@ -37,50 +47,26 @@ function TopBar({ width, forecastType, setForecastType }) {
   );
 }
 
+// WEATHER DRAWER
+
 export default function WeatherDrawer() {
+  const weatherData = useSelector((state) => state.weather.weatherData);
+
+  const [currentHour, setCurrentHour] = useState(1);
+  const [hourlyData, setHourlyData] = useState([]);
+
+  useEffect(() => {
+    if (weatherData.forecast) {
+      setHourlyData(weatherData.forecast.forecastday[0].hour);
+    }
+  }, [weatherData]);
+
+  //console.log(weatherData.current);
+
   const { width } = Dimensions.get('screen');
   const sheetRef = useRef(null);
 
   const snapPoints = useMemo(() => ['40%', '80%'], []);
-
-  const DATA = [
-    {
-      id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-      title: '12',
-    },
-    {
-      id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-      title: '1',
-    },
-    {
-      id: '58694a0f-3da1-471f-bd96-145571e29d72',
-      title: '2',
-    },
-    {
-      id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-      title: '3',
-    },
-    {
-      id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-      title: '4',
-    },
-    {
-      id: '58694a0f-3da1-471f-bd96-145571e29d72',
-      title: '5',
-    },
-    {
-      id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-      title: '6',
-    },
-    {
-      id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-      title: '7',
-    },
-    {
-      id: '58694a0f-3da1-471f-bd96-145571e29d72',
-      title: '8',
-    },
-  ];
 
   const [forecastType, setForecastType] = useState('hourly');
 
@@ -159,21 +145,21 @@ export default function WeatherDrawer() {
 
             <SafeAreaView style={styles.weatherElementsContainer}>
               <FlatList
-                data={DATA}
+                data={hourlyData}
                 horizontal={true}
                 scrollEnabled={true}
+                bounces={false}
                 renderItem={({ item }) => (
-                  <WeatherElement time={item.title} key={item} />
+                  <WeatherElement item={item} key={item.time_epoch} />
                 )}
-                keyExtractor={(item, index) => index}
+                keyExtractor={(item, index) => item.time_epoch}
                 showsHorizontalScrollIndicator={false}
                 showsVerticalScrollIndicator={false}
               />
 
               <Animated.View
                 style={[
-                  { height: 800 },
-                  { opacity: bottomElementsOpacity.current },
+                  { paddingBottom: 20, opacity: bottomElementsOpacity.current },
                 ]}
               >
                 <AirQualityWidget />
@@ -181,11 +167,22 @@ export default function WeatherDrawer() {
                   style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
-                    paddingHorizontal: 5,
+                    paddingHorizontal: 10,
                   }}
                 >
                   <UvIndexWidget />
-                  <UvIndexWidget />
+                  <SunriseWidget />
+                </View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    paddingHorizontal: 10,
+                    marginTop: -5,
+                  }}
+                >
+                  <WindWidget />
+                  <RainFallWidget />
                 </View>
               </Animated.View>
             </SafeAreaView>

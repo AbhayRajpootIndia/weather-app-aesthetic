@@ -4,8 +4,9 @@ import { useState } from 'react';
 
 // components
 import CustomSlider from './CustomSlider';
+import SunriseCurve from './SunriseCurve';
 
-export default function UvIndexWidget({ handlePress }) {
+export default function RainFallWidget({ handlePress }) {
   const [sliderContainerWidth, setSliderContainerWidth] = useState(300);
 
   // function to get current width of a View - (in this case for the outter container)
@@ -38,29 +39,45 @@ export default function UvIndexWidget({ handlePress }) {
           >
             <View style={styles.header}>
               <Image
-                source={require('../assets/images/weatherWidgets/sun.png')}
-                style={{ height: 20, width: 20 }}
+                source={require('../assets/images/weatherWidgets/drop.png')}
+                style={{ height: 18, width: 18 }}
               />
-              <Text style={styles.headerText}>UV INDEX</Text>
+              <Text style={styles.headerText}>RAINFALL</Text>
             </View>
             <Text
               style={{
                 color: 'white',
-                fontSize: 36,
+                marginTop: 5,
+                fontSize: 32,
               }}
             >
-              4
+              {1.8} mm
             </Text>
             <Text
               style={{
                 color: 'white',
-                fontSize: 20,
+                fontSize: 16,
               }}
             >
-              Moderate
+              in last hour
             </Text>
-
-            <CustomSlider sliderWidth={sliderContainerWidth - 40} value={0.1} />
+            <Text
+              style={{
+                color: 'white',
+                marginTop: 15,
+                fontSize: 14,
+              }}
+            >
+              1.2 mm expected in
+            </Text>
+            <Text
+              style={{
+                color: 'white',
+                fontSize: 14,
+              }}
+            >
+              next 24h.
+            </Text>
           </View>
         </BlurView>
       </Pressable>
@@ -86,7 +103,6 @@ const styles = StyleSheet.create({
   header: {
     width: '100%',
     marginTop: 20,
-    marginBottom: 10,
     flexDirection: 'row',
     columnGap: 5,
     alignItems: 'center',

@@ -4,8 +4,9 @@ import { useState } from 'react';
 
 // components
 import CustomSlider from './CustomSlider';
+import SunriseCurve from './SunriseCurve';
 
-export default function UvIndexWidget({ handlePress }) {
+export default function SunriseWidget({ handlePress }) {
   const [sliderContainerWidth, setSliderContainerWidth] = useState(300);
 
   // function to get current width of a View - (in this case for the outter container)
@@ -38,29 +39,30 @@ export default function UvIndexWidget({ handlePress }) {
           >
             <View style={styles.header}>
               <Image
-                source={require('../assets/images/weatherWidgets/sun.png')}
+                source={require('../assets/images/weatherWidgets/sunrise.png')}
                 style={{ height: 20, width: 20 }}
               />
-              <Text style={styles.headerText}>UV INDEX</Text>
+              <Text style={styles.headerText}>SUNRISE</Text>
             </View>
             <Text
               style={{
                 color: 'white',
-                fontSize: 36,
+                fontSize: 32,
               }}
             >
-              4
+              5:28 AM
             </Text>
-            <Text
-              style={{
-                color: 'white',
-                fontSize: 20,
-              }}
-            >
-              Moderate
-            </Text>
-
-            <CustomSlider sliderWidth={sliderContainerWidth - 40} value={0.1} />
+          </View>
+          <View
+            style={{
+              position: 'absolute',
+              width: 600,
+              height: '100%',
+              justifyContent: 'flex-end',
+              paddingBottom: 30,
+            }}
+          >
+            <SunriseCurve width={sliderContainerWidth} />
           </View>
         </BlurView>
       </Pressable>
@@ -86,7 +88,6 @@ const styles = StyleSheet.create({
   header: {
     width: '100%',
     marginTop: 20,
-    marginBottom: 10,
     flexDirection: 'row',
     columnGap: 5,
     alignItems: 'center',
