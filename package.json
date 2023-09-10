@@ -36,7 +36,8 @@
     "react-native-web": "~0.19.6",
     "react-redux": "^8.1.2",
     "redux": "^4.2.1",
-    "expo-updates": "~0.18.12"
+    "expo-updates": "~0.18.12",
+    "expo-location": "~16.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

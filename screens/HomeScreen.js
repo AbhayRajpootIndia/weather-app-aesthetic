@@ -1,12 +1,22 @@
 import { View, StyleSheet, ImageBackground } from 'react-native';
+import { useState } from 'react';
 
 import WeatherDrawer from '../components/WeatherDrawer';
-import WeatherSummary from '../components/WeatherSummary';
+import {
+  WeatherSummaryLarge,
+  WeatherSummaryCompact,
+} from '../components/WeatherSummary';
+import { useSelector } from 'react-redux';
 
 const backGroundImage = require('../assets/images/starry-mountain.jpg');
 const houseImage = require('../assets/images/house.png');
 
 export default function HomeScreen() {
+  const [isDrawerOpen, setIsOpenDrawer] = useState(false);
+
+  const cityName = useSelector((state) => state.location.city);
+  const temperatureData = useSelector((state) => state.weather.temperatureData);
+
   return (
     <View style={styles.container}>
       <ImageBackground source={backGroundImage} style={styles.image}>
@@ -20,11 +30,44 @@ export default function HomeScreen() {
             position: 'absolute',
           }}
         >
-          <ImageBackground source={houseImage} style={styles.houseImage}>
-            {/* <WeatherSummary /> */}
-          </ImageBackground>
+          <ImageBackground
+            source={houseImage}
+            style={styles.houseImage}
+          ></ImageBackground>
         </View>
-        <WeatherDrawer />
+        {!isDrawerOpen && (
+          <View
+            style={{
+              position: 'absolute',
+              height: '100%',
+              width: '100%',
+              alignItems: 'center',
+              paddingTop: '25%',
+            }}
+          >
+            <WeatherSummaryLarge
+              cityName={cityName}
+              temperatureData={temperatureData}
+            />
+          </View>
+        )}
+        {isDrawerOpen && (
+          <View
+            style={{
+              position: 'absolute',
+              height: '100%',
+              width: '100%',
+              alignItems: 'center',
+              paddingTop: '15%',
+            }}
+          >
+            <WeatherSummaryCompact
+              cityName={cityName}
+              temperatureData={temperatureData}
+            />
+          </View>
+        )}
+        <WeatherDrawer setIsOpenDrawer={setIsOpenDrawer} />
       </ImageBackground>
     </View>
   );

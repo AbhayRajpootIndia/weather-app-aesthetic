@@ -3,16 +3,19 @@ import { createSlice } from '@reduxjs/toolkit';
 const locationSlice = createSlice({
   name: 'location',
   initialState: {
-    currentLocation: {
-      city: 'Bengaluru',
-      lat: 12.9662976,
-      long: 77.6142848,
+    latlong: {
+      lat: 0.0,
+      long: 0.0,
     },
+    city: '-',
     locationList: [],
   },
   reducers: {
-    setCurrentLocation: (state, action) => {
-      state.currentLocation = action.payload.location;
+    setLatlong: (state, action) => {
+      state.latlong = action.payload.latlong;
+    },
+    setCity: (state, action) => {
+      state.city = action.payload.city;
     },
     addLocation: (state, action) => {
       state.locationList.push(action.payload.location);
@@ -32,6 +35,8 @@ const locationSlice = createSlice({
   },
 });
 
+export const setLatlong = locationSlice.actions.setLatlong;
+export const setCity = locationSlice.actions.setCity;
 export const setCurrentLocation = locationSlice.actions.setCurrentLocation;
 export const addLocation = locationSlice.actions.addLocation;
 export const removeLocation = locationSlice.actions.removeLocation;

@@ -3,7 +3,6 @@ import { BlurView } from 'expo-blur';
 import { useMemo, useState } from 'react';
 
 // components
-import CustomSlider from './CustomSlider';
 import SunriseCurve from './SunriseCurve';
 
 export default function SunriseWidget({ astroData, handlePress }) {

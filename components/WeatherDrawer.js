@@ -48,38 +48,26 @@ function TopBar({ width, forecastType, setForecastType }) {
 
 // WEATHER DRAWER
 
-export default function WeatherDrawer() {
+export default function WeatherDrawer({ setIsOpenDrawer }) {
   const { width } = Dimensions.get('screen');
 
   const weatherData = useSelector((state) => state.weather.weatherData);
-
-  const [hourlyData, setHourlyData] = useState([]);
-  const [aiqData, setAiqData] = useState({});
-  const [uvData, setUvData] = useState(0.0);
-  const [astroData, setAstroData] = useState({});
-  const [rainData, setRainData] = useState(0.0);
-  const [windData, setWindData] = useState({});
+  const hourlyData = useSelector((state) => state.weather.hourlyData);
+  const aiqData = useSelector((state) => state.weather.aiqData);
+  const uvData = useSelector((state) => state.weather.uvData);
+  const astroData = useSelector((state) => state.weather.astroData);
+  const rainData = useSelector((state) => state.weather.rainData);
+  const windData = useSelector((state) => state.weather.windData);
 
   const currentHour = useMemo(() => new Date().getHours(), []);
 
   useEffect(() => {
     if (weatherData.forecast) {
-      setHourlyData(weatherData.forecast.forecastday[0].hour);
-      setAiqData(weatherData.current.air_quality);
-      setUvData(weatherData.current.uv);
-      setAstroData(weatherData.forecast.forecastday[0].astro);
-      setRainData(weatherData.current.precip_mm);
-      setWindData({
-        wind_mph: weatherData.current.wind_mph,
-        wind_kph: weatherData.current.wind_kph,
-        wind_degree: weatherData.current.wind_degree,
-      });
-
       setTimeout(() => {
         try {
           weatherListRef.current.scrollToIndex({
             animated: true,
-            index: currentHour + 2 < 24 ? currentHour + 2 : currentHour,
+            index: currentHour + 1 < 24 ? currentHour + 1 : currentHour,
           });
         } catch (err) {
           console.error(err);
@@ -129,6 +117,7 @@ export default function WeatherDrawer() {
 
     // when drawer is closed
     if (index === 0) {
+      setIsOpenDrawer(false);
       // bottomElements OPACITY
       Animated.timing(bottomElementsOpacity.current, {
         toValue: 0.5,
@@ -150,6 +139,8 @@ export default function WeatherDrawer() {
     }
     // when drawer is opened
     else {
+      setIsOpenDrawer(true);
+
       Animated.timing(animatedY.current, {
         toValue: 100,
         duration: 40,
