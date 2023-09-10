@@ -14,13 +14,14 @@ function SliderCircle() {
   );
 }
 
-export default function CustomSlider({ value, sliderWidth }) {
+export default function CustomSlider({ value, sliderWidth, maxFactor }) {
   return (
     <View style={{ marginVertical: 15 }}>
       <MultiSlider
         enabledOne={false}
         sliderLength={sliderWidth || 300}
-        markerOffsetX={value * sliderWidth}
+        // when offsetX is equl to sliderWidth, the circle leaves the slider, therfore using (maxFactor * value)
+        markerOffsetX={value * sliderWidth * maxFactor}
         customMarker={() => <SliderCircle />}
         trackStyle={{ opacity: 0 }}
         containerStyle={{

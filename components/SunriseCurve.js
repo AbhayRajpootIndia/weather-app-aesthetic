@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { View, Image } from 'react-native';
 
 import SunriseCurveSvg from '../assets/images/weatherWidgets/sunrise-curve.svg';
 
@@ -8,8 +8,8 @@ export default function SunriseCurve({ width, pointSize }) {
 
   const dotSize = pointSize || canvasWidth * 0.06;
 
-  const dotX = canvasWidth * 0.27;
-  const dotY = canvasHeight * 0.5 * 1;
+  const dotX = canvasWidth * 0.34;
+  const dotY = canvasHeight * 0.3 * 1;
 
   return (
     <View
@@ -39,7 +39,18 @@ export default function SunriseCurve({ width, pointSize }) {
             backgroundColor: 'white',
             borderRadius: 50,
           }}
-        ></View>
+        >
+          <Image
+            style={{
+              position: 'absolute',
+              width: dotSize * 1.4,
+              height: dotSize * 1.4,
+              marginLeft: -0.2 * dotSize,
+              marginTop: -0.2 * dotSize,
+            }}
+            source={require('../assets/images/weatherWidgets/glowing-circle.png')}
+          />
+        </View>
       </View>
       <SunriseCurveSvg />
     </View>

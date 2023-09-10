@@ -1,11 +1,23 @@
 import { View, StyleSheet, Text, Image, Pressable } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 // components
 import CustomSlider from './CustomSlider';
 
-export default function UvIndexWidget({ handlePress }) {
+const uvMessage = (uvIndex) => {
+  if (0 <= uvIndex && uvIndex <= 2) {
+    return 'Safe';
+  } else if (3 <= uvIndex && uvIndex <= 7) {
+    return 'Moderate';
+  } else if (8 <= uvIndex) {
+    return 'Dangerous';
+  } else {
+    return 'Unknown';
+  }
+};
+
+export default function UvIndexWidget({ uvData, handlePress }) {
   const [sliderContainerWidth, setSliderContainerWidth] = useState(300);
 
   // function to get current width of a View - (in this case for the outter container)
@@ -17,6 +29,8 @@ export default function UvIndexWidget({ handlePress }) {
     // console.log(height);
     setSliderContainerWidth(width);
   };
+
+  const uvIndex = useMemo(() => uvData || 0, [uvData]);
 
   return (
     <View style={styles.widgetWrapper}>
@@ -49,7 +63,7 @@ export default function UvIndexWidget({ handlePress }) {
                 fontSize: 36,
               }}
             >
-              4
+              {uvIndex}
             </Text>
             <Text
               style={{
@@ -57,10 +71,14 @@ export default function UvIndexWidget({ handlePress }) {
                 fontSize: 20,
               }}
             >
-              Moderate
+              {uvMessage(uvIndex)}
             </Text>
 
-            <CustomSlider sliderWidth={sliderContainerWidth - 40} value={0.1} />
+            <CustomSlider
+              sliderWidth={sliderContainerWidth - 40}
+              value={uvIndex / 9 > 1 ? 1 : uvIndex / 9}
+              maxFactor={1}
+            />
           </View>
         </BlurView>
       </Pressable>

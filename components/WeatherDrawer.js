@@ -14,10 +14,9 @@ import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { FlatList } from 'react-native-gesture-handler';
 
 // APIS
-import getWeather from '../network/getWeatherAPI';
 
 // redux
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 // components
 import WeatherDrawerBottomTabsBar from './WeatherDrawerBottomTabsBar';
@@ -50,20 +49,67 @@ function TopBar({ width, forecastType, setForecastType }) {
 // WEATHER DRAWER
 
 export default function WeatherDrawer() {
+  const { width } = Dimensions.get('screen');
+
   const weatherData = useSelector((state) => state.weather.weatherData);
 
-  const [currentHour, setCurrentHour] = useState(1);
   const [hourlyData, setHourlyData] = useState([]);
+  const [aiqData, setAiqData] = useState({});
+  const [uvData, setUvData] = useState(0.0);
+  const [astroData, setAstroData] = useState({});
+  const [rainData, setRainData] = useState(0.0);
+  const [windData, setWindData] = useState({});
+
+  const currentHour = useMemo(() => new Date().getHours(), []);
 
   useEffect(() => {
     if (weatherData.forecast) {
       setHourlyData(weatherData.forecast.forecastday[0].hour);
+      setAiqData(weatherData.current.air_quality);
+      setUvData(weatherData.current.uv);
+      setAstroData(weatherData.forecast.forecastday[0].astro);
+      setRainData(weatherData.current.precip_mm);
+      setWindData({
+        wind_mph: weatherData.current.wind_mph,
+        wind_kph: weatherData.current.wind_kph,
+        wind_degree: weatherData.current.wind_degree,
+      });
+
+      setTimeout(() => {
+        try {
+          weatherListRef.current.scrollToIndex({
+            animated: true,
+            index: currentHour + 2 < 24 ? currentHour + 2 : currentHour,
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      }, 100);
     }
   }, [weatherData]);
 
-  //console.log(weatherData.current);
+  const weatherListRef = useRef();
 
-  const { width } = Dimensions.get('screen');
+  const getItemLayout = (data, index) => {
+    return { length: 80, offset: 80 * index, index };
+  };
+
+  const scrollToIndexFailed = (error) => {
+    try {
+      weatherListRef.scrollToOffset({
+        offset: error.averageItemLength * error.index,
+        animated: true,
+      });
+      setTimeout(() => {
+        if (hourlyData.length !== 0 && weatherListRef !== null) {
+          weatherListRef.scrollToIndex({ index: error.index, animated: true });
+        }
+      }, 100);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const sheetRef = useRef(null);
 
   const snapPoints = useMemo(() => ['40%', '80%'], []);
@@ -72,7 +118,8 @@ export default function WeatherDrawer() {
 
   // we use useRef() to store the value of new Animted.Value(0) to avoid re-initialising of the Animated.Value to 0 whenever a state changes in our component
   const animatedY = useRef(new Animated.Value(0));
-  const bottomElementsOpacity = useRef(new Animated.Value(0.0));
+  const bottomElementsOpacity = useRef(new Animated.Value(0.5));
+  const bottomElementsY = useRef(new Animated.Value(50));
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -84,8 +131,14 @@ export default function WeatherDrawer() {
     if (index === 0) {
       // bottomElements OPACITY
       Animated.timing(bottomElementsOpacity.current, {
-        toValue: 0.0,
+        toValue: 0.5,
         duration: 50,
+        useNativeDriver: true,
+      }).start();
+
+      Animated.timing(bottomElementsY.current, {
+        toValue: 50,
+        duration: 100,
         useNativeDriver: true,
       }).start();
 
@@ -103,9 +156,15 @@ export default function WeatherDrawer() {
         useNativeDriver: true,
       }).start();
 
-      // bottomElements OPACITY
+      // bottomElements
       Animated.timing(bottomElementsOpacity.current, {
         toValue: 1.0,
+        duration: 100,
+        useNativeDriver: true,
+      }).start();
+
+      Animated.timing(bottomElementsY.current, {
+        toValue: 0.0,
         duration: 100,
         useNativeDriver: true,
       }).start();
@@ -145,24 +204,37 @@ export default function WeatherDrawer() {
 
             <SafeAreaView style={styles.weatherElementsContainer}>
               <FlatList
+                ref={weatherListRef}
+                getItemLayout={getItemLayout}
+                onScrollToIndexFailed={scrollToIndexFailed}
                 data={hourlyData}
-                horizontal={true}
-                scrollEnabled={true}
-                bounces={false}
                 renderItem={({ item }) => (
-                  <WeatherElement item={item} key={item.time_epoch} />
+                  <WeatherElement
+                    hourData={item}
+                    key={item.time_epoch}
+                    currentHour={currentHour}
+                  />
                 )}
                 keyExtractor={(item, index) => item.time_epoch}
+                scrollEnabled={true}
+                horizontal={true}
+                initialNumToRender={5}
+                maxToRenderPerBatch={3}
+                bounces={false}
                 showsHorizontalScrollIndicator={false}
                 showsVerticalScrollIndicator={false}
               />
 
               <Animated.View
                 style={[
-                  { paddingBottom: 20, opacity: bottomElementsOpacity.current },
+                  {
+                    paddingBottom: 20,
+                    opacity: bottomElementsOpacity.current,
+                    transform: [{ translateY: bottomElementsY.current }],
+                  },
                 ]}
               >
-                <AirQualityWidget />
+                <AirQualityWidget aiqData={aiqData} />
                 <View
                   style={{
                     flexDirection: 'row',
@@ -170,8 +242,8 @@ export default function WeatherDrawer() {
                     paddingHorizontal: 10,
                   }}
                 >
-                  <UvIndexWidget />
-                  <SunriseWidget />
+                  <UvIndexWidget uvData={uvData} />
+                  <SunriseWidget astroData={astroData} />
                 </View>
                 <View
                   style={{
@@ -181,8 +253,8 @@ export default function WeatherDrawer() {
                     marginTop: -5,
                   }}
                 >
-                  <WindWidget />
-                  <RainFallWidget />
+                  <WindWidget windData={windData} />
+                  <RainFallWidget rainData={rainData} />
                 </View>
               </Animated.View>
             </SafeAreaView>

@@ -2,7 +2,6 @@ import 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { StatusBar } from 'expo-status-bar';
-import { PaperProvider } from 'react-native-paper';
 
 import { useEffect } from 'react';
 import { Keyboard, ImageBackground, StyleSheet, View } from 'react-native';
@@ -17,6 +16,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import MainNavigator from './routes/MainNavigator';
 import ErrorScreen from './screens/ErrorScreen';
+
+import getWeather from './network/getWeatherAPI';
 
 const Stack = createNativeStackNavigator();
 
@@ -55,7 +56,7 @@ function AppRouter() {
 
       getWeather(lat, long)
         .then((weatherData) => {
-          console.log(weatherData);
+          //console.log(weatherData);
           dispatch(setWeatherData({ weatherData: weatherData }));
         })
         .catch((err) => console.error(err));

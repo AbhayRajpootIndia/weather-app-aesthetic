@@ -1,12 +1,12 @@
 import { View, StyleSheet, Text, Image, Pressable } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 // components
 import CustomSlider from './CustomSlider';
 import SunriseCurve from './SunriseCurve';
 
-export default function SunriseWidget({ handlePress }) {
+export default function SunriseWidget({ astroData, handlePress }) {
   const [sliderContainerWidth, setSliderContainerWidth] = useState(300);
 
   // function to get current width of a View - (in this case for the outter container)
@@ -18,6 +18,11 @@ export default function SunriseWidget({ handlePress }) {
     // console.log(height);
     setSliderContainerWidth(width);
   };
+
+  const sunriseTime = useMemo(
+    () => astroData.sunrise || '00:00 --',
+    [astroData]
+  );
 
   return (
     <View style={styles.widgetWrapper}>
@@ -47,10 +52,10 @@ export default function SunriseWidget({ handlePress }) {
             <Text
               style={{
                 color: 'white',
-                fontSize: 32,
+                fontSize: 28,
               }}
             >
-              5:28 AM
+              {sunriseTime}
             </Text>
           </View>
           <View

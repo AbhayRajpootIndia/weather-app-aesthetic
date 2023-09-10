@@ -25,6 +25,18 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "8ce135cb-0508-46a0-b213-d0b74f69efa0"
+      }
+    },
+    "owner": "abhayrajpootindia",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/8ce135cb-0508-46a0-b213-d0b74f69efa0"
     }
   }
 }

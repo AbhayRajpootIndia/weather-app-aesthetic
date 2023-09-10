@@ -5,7 +5,7 @@ import { useState } from 'react';
 // components
 import Compass from './Compass';
 
-export default function WindWidget({ handlePress }) {
+export default function WindWidget({ windData, handlePress }) {
   const [sliderContainerWidth, setSliderContainerWidth] = useState(300);
 
   // function to get current width of a View - (in this case for the outter container)
@@ -52,7 +52,7 @@ export default function WindWidget({ handlePress }) {
               justifyContent: 'flex-end',
             }}
           >
-            <Compass width={sliderContainerWidth} />
+            <Compass width={sliderContainerWidth} windData={windData} />
           </View>
         </BlurView>
       </Pressable>

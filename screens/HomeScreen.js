@@ -1,7 +1,7 @@
 import { View, StyleSheet, ImageBackground } from 'react-native';
-import { Text } from 'react-native-paper';
 
 import WeatherDrawer from '../components/WeatherDrawer';
+import WeatherSummary from '../components/WeatherSummary';
 
 const backGroundImage = require('../assets/images/starry-mountain.jpg');
 const houseImage = require('../assets/images/house.png');
@@ -20,10 +20,9 @@ export default function HomeScreen() {
             position: 'absolute',
           }}
         >
-          <ImageBackground
-            source={houseImage}
-            style={styles.houseImage}
-          ></ImageBackground>
+          <ImageBackground source={houseImage} style={styles.houseImage}>
+            {/* <WeatherSummary /> */}
+          </ImageBackground>
         </View>
         <WeatherDrawer />
       </ImageBackground>

@@ -1,12 +1,24 @@
 import { View, StyleSheet, Text, Image, Pressable } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { IconButton } from 'react-native-paper';
 
 // components
 import CustomSlider from './CustomSlider';
 
-export default function AirQualityWidget({ handlePress }) {
+const aiqMessage = (aiqIndex) => {
+  if (0 < aiqIndex && aiqIndex <= 3) {
+    return 'Low health risk';
+  } else if (4 <= aiqIndex && aiqIndex <= 6) {
+    return 'Moderate health risk';
+  } else if (7 <= aiqIndex && aiqIndex <= 10) {
+    return 'High health risk';
+  } else {
+    return 'Air Quality Index not found';
+  }
+};
+
+export default function AirQualityWidget({ aiqData, handlePress }) {
   const [sliderContainerWidth, setSliderContainerWidth] = useState(300);
 
   // function to get current width of a View - (in this case for the outter container)
@@ -18,6 +30,8 @@ export default function AirQualityWidget({ handlePress }) {
     // console.log(height);
     setSliderContainerWidth(width);
   };
+
+  const aiqIndex = useMemo(() => aiqData['gb-defra-index'] || 0, [aiqData]);
 
   return (
     <View style={styles.widgetWrapper}>
@@ -45,10 +59,14 @@ export default function AirQualityWidget({ handlePress }) {
               fontSize: 24,
             }}
           >
-            3 - Low Heart Risk
+            {aiqIndex} - {aiqMessage(aiqIndex)}
           </Text>
 
-          <CustomSlider sliderWidth={sliderContainerWidth - 10} value={0.3} />
+          <CustomSlider
+            sliderWidth={sliderContainerWidth - 10}
+            value={aiqIndex / 10}
+            maxFactor={0.9}
+          />
 
           <Pressable
             onPress={() =>

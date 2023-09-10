@@ -1,24 +1,7 @@
 import { View, StyleSheet, Text, Image, Pressable } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { useState } from 'react';
 
-// components
-import CustomSlider from './CustomSlider';
-import SunriseCurve from './SunriseCurve';
-
-export default function RainFallWidget({ handlePress }) {
-  const [sliderContainerWidth, setSliderContainerWidth] = useState(300);
-
-  // function to get current width of a View - (in this case for the outter container)
-  const getWidgetContainerDimensions = (event) => {
-    var { x, y, width, height } = event.nativeEvent.layout;
-    // console.log(x);
-    // console.log(y);
-    // console.log(width);
-    // console.log(height);
-    setSliderContainerWidth(width);
-  };
-
+export default function RainFallWidget({ rainData, handlePress }) {
   return (
     <View style={styles.widgetWrapper}>
       <Pressable
@@ -33,10 +16,7 @@ export default function RainFallWidget({ handlePress }) {
           overlayColor="transparent"
           reducedTransparencyFallbackColor="rgba(72, 49, 157, 0.20)"
         >
-          <View
-            style={styles.widgetContainer}
-            onLayout={(event) => getWidgetContainerDimensions(event)}
-          >
+          <View style={styles.widgetContainer}>
             <View style={styles.header}>
               <Image
                 source={require('../assets/images/weatherWidgets/drop.png')}
@@ -51,7 +31,7 @@ export default function RainFallWidget({ handlePress }) {
                 fontSize: 32,
               }}
             >
-              {1.8} mm
+              {`${rainData}`} mm
             </Text>
             <Text
               style={{

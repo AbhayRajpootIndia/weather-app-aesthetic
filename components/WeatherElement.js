@@ -1,25 +1,36 @@
 import { Text, View, Image, StyleSheet, Pressable } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useMemo, useState } from 'react';
+import { getFormattedTime } from '../helper-functions/getFormattedTime';
+import { weatherCodes } from '../assets/constants/weatherCodes';
 
-function getFormattedTime(time) {
-  if (time === 0) {
-    return '12 AM';
-  } else if (time < 12) {
-    return `${time} AM`;
-  } else if (time === 12) {
-    return '12 PM';
-  } else {
-    return `${time % 12} PM`;
-  }
-}
-
-function WeatherElement({ item }) {
-  const image = require('../assets/images/weatherElementIcons/moon-cloud-mid-rain.png');
+function WeatherElement({ hourData, currentHour }) {
   const [isFocused, setIsFocused] = useState(false);
-  const date = new Date(0);
-  date.setUTCSeconds(parseInt(item.time_epoch));
-  const time = useMemo(() => date.getHours(), [item]);
+
+  const hour = useMemo(() => {
+    if (hourData.time_epoch) {
+      const date = new Date(0);
+      date.setUTCSeconds(parseInt(hourData.time_epoch));
+      return date.getHours();
+    } else {
+      return 12;
+    }
+  }, [hourData]);
+
+  const imageUrl = useMemo(() => {
+    if (hourData.condition) {
+      const weatherCode = weatherCodes.find(
+        (code) => code.code === hourData.condition.code
+      );
+      const dayState = hour > 5 && hour < 18 ? 'day' : 'night';
+
+      const imageUrl = `https://cdn.weatherapi.com/weather/128x128/${dayState}/${weatherCode.icon}.png`;
+
+      return imageUrl;
+    } else {
+      return 'https://cdn.weatherapi.com/weather/128x128/day/116.png';
+    }
+  }, [hourData]);
 
   return (
     <Pressable
@@ -34,7 +45,9 @@ function WeatherElement({ item }) {
       <View
         style={[
           styles.container,
-          isFocused ? { backgroundColor: '#48319D' } : {},
+          isFocused || currentHour === hour
+            ? { backgroundColor: '#48319D' }
+            : {},
         ]}
       >
         <BlurView
@@ -47,6 +60,7 @@ function WeatherElement({ item }) {
             flex: 1,
             paddingVertical: 15,
             paddingHorizontal: 5,
+            width: '100%',
             justifyContent: 'center',
           }}
         >
@@ -58,14 +72,19 @@ function WeatherElement({ item }) {
             }}
           >
             <Text style={[styles.text, { fontSize: 14, fontWeight: '500' }]}>
-              {getFormattedTime(time)}
+              {getFormattedTime(hour)}
             </Text>
             <Image
-              source={require('../assets/images/weatherElementIcons/moon-cloud-mid-rain.png')}
-              style={{ width: 50, height: 50 }}
+              source={{
+                uri: imageUrl,
+              }}
+              style={{ width: 40, height: 40 }}
             />
+            <Text style={{ color: 'cyan', fontSize: 12, marginTop: -10 }}>
+              20%
+            </Text>
             <Text style={[styles.text, { fontSize: 18, fontWeight: '400' }]}>
-              {parseInt(item.temp_c)}º
+              {parseInt(hourData.temp_c)}º
             </Text>
           </View>
         </BlurView>
