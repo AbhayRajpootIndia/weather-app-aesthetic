@@ -12,5 +12,8 @@ module.exports = (async () => {
       assetExts: assetExts.filter((ext) => ext !== 'svg'),
       sourceExts: [...sourceExts, 'svg'],
     },
+    transformer: {
+      assetPlugins: ['expo-asset/tools/hashAssetFiles'],
+    },
   };
 })();

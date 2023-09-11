@@ -31,7 +31,7 @@ export default function RainFallWidget({ rainData, handlePress }) {
                 fontSize: 32,
               }}
             >
-              {`${rainData}`} mm
+              {rainData.currentPrecip} mm
             </Text>
             <Text
               style={{
@@ -48,7 +48,7 @@ export default function RainFallWidget({ rainData, handlePress }) {
                 fontSize: 14,
               }}
             >
-              1.2 mm expected in
+              {rainData.totalPrecip} mm expected in
             </Text>
             <Text
               style={{

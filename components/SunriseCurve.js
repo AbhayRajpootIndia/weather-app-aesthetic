@@ -1,6 +1,6 @@
 import { View, Image } from 'react-native';
 
-import SunriseCurveSvg from '../assets/images/weatherWidgets/sunrise-curve.svg';
+import SunriseCurveSvg from '../assets/images/weatherWidgets/sunrise-curve-2.jsx';
 
 export default function SunriseCurve({ width, pointSize }) {
   const canvasWidth = width || 400;

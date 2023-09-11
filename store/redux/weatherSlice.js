@@ -8,7 +8,10 @@ const weatherSlice = createSlice({
     aiqData: {},
     uvData: 0.0,
     astroData: {},
-    rainData: 0.0,
+    rainData: {
+      currentPrecip: 0.0,
+      totalPrecip: 0.0,
+    },
     windData: {},
     temperatureData: {},
   },

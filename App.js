@@ -115,7 +115,14 @@ function AppRouter() {
           astroData: weatherData.forecast.forecastday[0].astro,
         })
       );
-      dispatch(setRainData({ rainData: weatherData.current.precip_mm }));
+      dispatch(
+        setRainData({
+          rainData: {
+            currentPrecip: weatherData.current.precip_mm,
+            totalPrecip: weatherData.forecast.forecastday[0].day.totalprecip_mm,
+          },
+        })
+      );
       dispatch(
         setWindData({
           windData: {
