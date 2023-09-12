@@ -5,8 +5,14 @@ import { StatusBar } from 'expo-status-bar';
 
 import * as Location from 'expo-location';
 
-import { useEffect } from 'react';
-import { Keyboard, ImageBackground, StyleSheet, Alert } from 'react-native';
+import { useEffect, useState } from 'react';
+import {
+  Keyboard,
+  ImageBackground,
+  StyleSheet,
+  Alert,
+  Linking,
+} from 'react-native';
 
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { store } from './store/redux/store';
@@ -22,7 +28,7 @@ import {
   setTemperatureData,
 } from './store/redux/weatherSlice';
 
-import { NavigationContainer } from '@react-navigation/native';
+import { Link, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import MainNavigator from './routes/MainNavigator';
@@ -30,6 +36,8 @@ import ErrorScreen from './screens/ErrorScreen';
 
 import getWeather from './network/getWeatherAPI';
 import { setLatlong, setCity } from './store/redux/locationSlice';
+
+import { useForegroundPermissions } from 'expo-location';
 
 const Stack = createNativeStackNavigator();
 
@@ -59,15 +67,13 @@ function AppRouter() {
   }, []);
 
   useEffect(() => {
-    (async () => {
+    const getLocationHandler = async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission to access location was denied');
-        return;
-      }
 
-      await Location.getCurrentPositionAsync({})
-        .then((location) => {
+      if (status === Location.PermissionStatus.GRANTED) {
+        Location.getCurrentPositionAsync({}).then((location) => {
+          console.log(location);
+
           dispatch(
             setLatlong({
               latlong: {
@@ -76,9 +82,53 @@ function AppRouter() {
               },
             })
           );
-        })
-        .catch((err) => console.error(err));
-    })();
+        });
+      } else {
+        Alert.alert(
+          'Insufficient Permissions',
+          'You must grant location permission to use this app.'
+        );
+
+        setTimeout(() => {
+          Linking.openSettings()
+            .then((data) => {
+              console.log('Settings data:');
+              console.log(data);
+            })
+            .catch((err) => console.error(err));
+        }, 2000);
+
+        setTimeout(() => {
+          Location.getForegroundPermissionsAsync()
+            .then((permissionResponse) => {
+              console.log(permissionResponse);
+              if (
+                permissionResponse.status === Location.PermissionStatus.GRANTED
+              ) {
+                console.log('needed');
+
+                Location.getCurrentPositionAsync({}).then((location) => {
+                  console.log(location);
+
+                  dispatch(
+                    setLatlong({
+                      latlong: {
+                        lat: location.coords.latitude,
+                        long: location.coords.longitude,
+                      },
+                    })
+                  );
+                });
+              } else {
+                console.log('close app');
+              }
+            })
+            .catch((error) => console.error(error));
+        }, 6000);
+      }
+    };
+
+    getLocationHandler();
   }, []);
 
   const latlong = useSelector((state) => state.location.latlong);
