@@ -94,7 +94,7 @@ Contributions are welcome! If you'd like to improve this Weather App or add new 
 
 ## License
 
-This Weather App is open-source and available under the [MIT License](https://choosealicense.com/licenses/mit/).
+This Weather App is open-source and available under the [MIT License](LICENSE).
 
 Enjoy using the Weather App! If you have any questions or encounter issues, please feel free to [create an issue](https://github.com/AbhayRajpootIndia/weather-app-aesthetic/issues) on GitHub.
 

@@ -86,7 +86,7 @@ function AppRouter() {
       } else {
         Alert.alert(
           'Insufficient Permissions',
-          'You must grant location permission to use this app.'
+          'You must grant location permission to use this app.'f
         );
 
         setTimeout(() => {
